@@ -1,0 +1,39 @@
+.task-list {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Распределение по всей ширине */
+}
+
+.task-list h2 {
+    font-size: 24px;
+    color: #343a40;
+    width: 100%; /* Занять всю ширину для заголовка */
+}
+
+.task-list .task-item {
+    background-color: #ffffff;
+    border-radius: 20px; /* Овальная форма */
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin: 10px;
+    width: calc(45% - 20px); /* Две карточки в строке */
+}
+
+.task-list button {
+    margin-right: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 20px; /* Овальная форма кнопок */
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.task-list button:hover {
+    background-color: #0056b3;
+}

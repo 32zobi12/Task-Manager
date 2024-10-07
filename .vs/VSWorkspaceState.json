@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\myproject",
+    "\\myproject\\myapp",
+    "\\myproject\\myapp\\migrations",
+    "\\myproject\\myproject",
+    "\\myproject\\myproject\\__pycache__"
+  ],
+  "SelectedNode": "\\myproject\\myproject\\settings.py",
+  "PreviewInSolutionExplorer": false
+}
