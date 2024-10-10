@@ -1,82 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import TaskEditForm from './TaskEditForm';// Импортируйте компонент для редактирования задачи
+import TaskEditForm from './TaskEditForm';
+import DateTimeDisplay from "./DateTimeDisplay";
+import TaskItem from './TaskItem';
+import FilterButtons from './FilterButtons';
+import { fetchTasks, updateTaskCompletion, deleteTask } from './taskService';
 import '../styles/TaskList.css';
 
 const TaskList = () => {
     const [tasks, setTasks] = useState([]);
     const [error, setError] = useState(null);
-    const [editingTaskId, setEditingTaskId] = useState(null); // Состояние для редактируемой задачи
-    const [loading, setLoading] = useState(true); // Состояние загрузки
+    const [editingTaskId, setEditingTaskId] = useState(null);
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
-        fetchTasks();
+        loadTasks();
     }, []);
 
-    const fetchTasks = async () => {
+    const loadTasks = async () => {
         const token = localStorage.getItem('access');
-
         if (!token) {
             setError('Токен не найден. Пожалуйста, войдите в систему.');
             setLoading(false);
             return;
         }
-
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/tasks/', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Не удалось получить задачи');
-            }
-
-            const data = await response.json();
-            console.log('Fetched tasks:', data); // Логирование полученных задач
+            const data = await fetchTasks(token);
             setTasks(data);
         } catch (error) {
             setError(error.message);
         } finally {
-            setLoading(false); // Сброс состояния загрузки
+            setLoading(false);
+        }
+    };
+
+    const handleComplete = async (id, completed) => {
+        const token = localStorage.getItem('access');
+        if (!token) {
+            setError('Токен не найден.');
+            return;
+        }
+        try {
+            await updateTaskCompletion(id, completed, token);
+            loadTasks();
+        } catch (error) {
+            setError(error.message);
         }
     };
 
     const handleDelete = async (id) => {
-        console.log(`Attempting to delete task with ID: ${id}`); // Логирование ID задачи для удаления
-        if (typeof id !== 'number' || id <= 0) {
-            console.error(`Invalid task ID: ${id}`);
-            setError('Некорректный ID задачи');
-            return;
-        }
-
         const token = localStorage.getItem('access');
-        console.log(`URL for deletion: http://127.0.0.1:8000/api/tasks/${id}/`);
         if (!token) {
-            setError('Токен не найден. Пожалуйста, войдите в систему.');
+            setError('Токен не найден.');
             return;
         }
-
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/tasks/${id}/`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                setTasks(tasks.filter(task => task.id !== id));
-                console.log(`Task with ID ${id} deleted successfully`);
-            } else {
-                const errorData = await response.json();
-                console.error('Delete error response:', errorData);
-                throw new Error(errorData.detail || 'Не удалось удалить задачу');
-            }
+            await deleteTask(id, token);
+            setTasks(tasks.filter(task => task.id !== id));
         } catch (error) {
-            console.error('Delete error:', error.message);
             setError(error.message);
         }
     };
@@ -86,42 +68,62 @@ const TaskList = () => {
     };
 
     const handleUpdate = () => {
-        setEditingTaskId(null); // Закрыть форму редактирования
-        fetchTasks(); // Перезапросить задачи, чтобы обновить список
+        setEditingTaskId(null);
+        loadTasks();
     };
 
-    if (loading) {
-        return <div>Загрузка задач...</div>; // Индикатор загрузки
-    }
+    const handleSelectTask = (task) => {
+        setSelectedTask(task);
+    };
 
-    if (editingTaskId) {
-        return (
-            <TaskEditForm
-                taskId={editingTaskId}
-                onCancel={() => setEditingTaskId(null)}
-                onUpdate={handleUpdate}
-            />
-        );
-    }
+    const handleBackToList = () => {
+        setSelectedTask(null);
+    };
 
-    if (error) {
-        return <div>{error}</div>;
-    }
+    const filteredTasks = tasks.filter((task) => {
+        if (filter === 'completed') return task.completed;
+        if (filter === 'incomplete') return !task.completed;
+        return true;
+    });
+
+    if (loading) return <div>Загрузка задач...</div>;
+    if (error) return <div>{error}</div>;
 
     return (
         <div className="task-list">
+            <DateTimeDisplay />
             <h2>Список задач</h2>
-            {tasks.map((task) => (
-                <div className="task-item" key={task.id}>
-                    <h3>{task.title}</h3>
-                    <p>{task.description}</p>
-                    <button onClick={() => handleEdit(task.id)}>Редактировать</button>
-                    <button onClick={() => handleDelete(task.id)}>Удалить</button>
+            <FilterButtons setFilter={setFilter} />
+
+            {editingTaskId ? (
+                <TaskEditForm
+                    taskId={editingTaskId}
+                    onCancel={() => setEditingTaskId(null)}
+                    onUpdate={handleUpdate}
+                />
+            ) : selectedTask ? (
+                <div className="task-details">
+                    <h3>Описание задачи</h3>
+                    <p><strong>Тема:</strong> {selectedTask.title}</p>
+                    <p><strong>Описание:</strong> {selectedTask.description}</p>
+                    <p><strong>Выполнена:</strong> {selectedTask.completed ? 'Да' : 'Нет'}</p>
+                    <button onClick={handleBackToList}>Вернуться к списку</button>
                 </div>
-            ))}
+            ) : (
+                filteredTasks.map((task) => (
+                    <TaskItem
+                        key={task.id}
+                        task={task}
+                        handleComplete={handleComplete}
+                        handleEdit={handleEdit}
+                        handleDelete={handleDelete}
+                        handleSelectTask={handleSelectTask}
+                    />
+                ))
+            )}
         </div>
     );
+
 };
 
 export default TaskList;
-

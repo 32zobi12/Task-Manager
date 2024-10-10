@@ -46,7 +46,9 @@ body {
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-size: 16px;
+  text-decoration: none; /* Убирает подчеркивание текста */
 }
+
 
 .nav-button:hover {
   background-color: #0056b3;
@@ -100,7 +102,16 @@ button:hover {
 
 /* Кнопка регистрации */
 .logout-button {
-  background-color: #ff4b5c;
+  position: absolute; /* Размещаем в верхнем правом углу */
+  top: 20px;
+  right: 20px;
+  background-color: #dc3545; /* Красный цвет для кнопки выхода */
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .logout-button:hover {

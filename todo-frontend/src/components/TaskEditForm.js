@@ -1,9 +1,12 @@
 // TaskEditForm.js
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../styles/TaskEditForm.css'; // Импорт стилей
 
 const TaskEditForm = ({ taskId, onCancel, onUpdate }) => {
     const [taskData, setTaskData] = useState({ title: '', description: '' });
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTask = async () => {
@@ -63,16 +66,17 @@ const TaskEditForm = ({ taskId, onCancel, onUpdate }) => {
             }
 
             onUpdate(); // Вызов функции обновления после успешного редактирования
+            navigate('/tasks'); // Перенаправление на страницу задач после обновления
         } catch (error) {
             setError(error.message);
         }
     };
 
     return (
-        <div>
+        <div className="task-edit-form-container">
             <h2>Редактировать задачу</h2>
-            {error && <div>{error}</div>}
-            <form onSubmit={handleSubmit}>
+            {error && <div className="error-message">{error}</div>}
+            <form onSubmit={handleSubmit} className="task-edit-form">
                 <label>
                     Заголовок:
                     <input
@@ -81,6 +85,8 @@ const TaskEditForm = ({ taskId, onCancel, onUpdate }) => {
                         value={taskData.title}
                         onChange={handleChange}
                         required
+                        maxLength={25} // Ограничение на 25 символов
+                        className="task-input"
                     />
                 </label>
                 <label>
@@ -90,15 +96,15 @@ const TaskEditForm = ({ taskId, onCancel, onUpdate }) => {
                         value={taskData.description}
                         onChange={handleChange}
                         required
+                        maxLength={255} // Ограничение на 255 символов
+                        className="task-input"
                     />
                 </label>
-                <button type="submit">Сохранить</button>
-                <button type="button" onClick={onCancel}>Отмена</button>
+                <button type="submit" className="submit-button">Сохранить</button>
+                <button type="button" onClick={onCancel} className="cancel-button">Отмена</button>
             </form>
         </div>
     );
 };
 
 export default TaskEditForm;
-
-

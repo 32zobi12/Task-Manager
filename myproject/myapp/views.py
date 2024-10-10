@@ -41,7 +41,14 @@ class TaskListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 # Представление для получения, обновления и удаления конкретной задачи
+# views.py
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+
+    def perform_update(self, serializer):
+        # Если задача выполняется, устанавливаем её состояние в 'completed'
+        completed = self.request.data.get('completed', False)
+        serializer.save(completed=completed)
+

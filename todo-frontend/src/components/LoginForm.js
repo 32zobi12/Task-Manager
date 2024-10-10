@@ -1,10 +1,12 @@
 // LoginForm.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onLoginSuccess }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,7 +23,8 @@ const LoginForm = ({ onLoginSuccess }) => {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('access', data.access);
-                onLoginSuccess();  // Успешный вход
+                onLoginSuccess();
+                navigate('/tasks'); // Перенаправляем на страницу задач
             } else {
                 const errorData = await response.json();
                 setError(errorData.detail || 'Неверное имя пользователя или пароль');
@@ -58,5 +61,4 @@ const LoginForm = ({ onLoginSuccess }) => {
 };
 
 export default LoginForm;
-
 

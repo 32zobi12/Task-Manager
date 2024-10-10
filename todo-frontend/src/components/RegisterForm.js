@@ -1,32 +1,54 @@
+// RegisterForm.js
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const RegisterForm = () => {
+const RegisterForm = ({ onRegisterSuccess }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false); // Для отслеживания успешной регистрации
+    const [success, setSuccess] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); // Сброс ошибки перед новым запросом
-        setSuccess(false); // Сброс успешного состояния
+        setError('');
+        setSuccess(false);
+
+        // Проверка на длину имени пользователя и пароля
+        if (username.length < 8) {
+            setError('Имя пользователя должно содержать не менее 8 символов');
+            return;
+        }
+        if (password.length < 8) {
+            setError('Пароль должен содержать не менее 8 символов');
+            return;
+        }
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/register/', {
-                username,
-                password,
+            const response = await fetch('http://127.0.0.1:8000/api/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
             });
 
-            // Если регистрация успешна, устанавливаем состояние успеха
             if (response.status === 201) {
-                setSuccess(true); // Успешная регистрация
-                setUsername(''); // Сброс имени пользователя
-                setPassword(''); // Сброс пароля
+                setSuccess(true);
+                setUsername('');
+                setPassword('');
+
+                // Показать сообщение об успешной регистрации на 2 секунды, затем перенаправить
+                setTimeout(() => {
+                    onRegisterSuccess(); // Вызов функции для обработки успешной регистрации
+                    navigate('/login'); // Перенаправление на страницу входа
+                }, 2000);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.detail || 'Ошибка регистрации');
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.detail || 'Registration failed';
-            setError(errorMessage); // Обновление сообщения об ошибке
+            setError('Ошибка регистрации');
         }
     };
 
@@ -52,7 +74,7 @@ const RegisterForm = () => {
             </div>
             <button type="submit">Регистрация</button>
             {error && <p style={{ color: 'red' }}>{error}</p>}
-            {success && <p style={{ color: 'green' }}>Registration successful!</p>}
+            {success && <p style={{ color: 'green' }}>Регистрация успешна!</p>}
         </form>
     );
 };

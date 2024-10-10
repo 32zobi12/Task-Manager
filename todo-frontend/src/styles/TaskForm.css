@@ -44,6 +44,7 @@ label {
     border: 1px solid #ddd;
     font-size: 16px;
     transition: border-color 0.3s ease;
+    word-wrap: break-word; /* Чтобы длинные слова переносились */
 }
 
 /* Поля ввода при фокусе */
@@ -51,6 +52,14 @@ label {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+}
+
+/* Ограничение высоты для textarea */
+textarea.task-input {
+    resize: none;
+    max-height: 150px; /* Ограничение по высоте */
+    overflow-y: auto;  /* Прокрутка при превышении высоты */
+    overflow-wrap: break-word; /* Перенос длинных слов */
 }
 
 /* Кнопка отправки */
